@@ -9,20 +9,14 @@ import (
 	"github.com/spectre-xenon/lumina-chat/internal/middleware"
 )
 
-const STATIC_PATH = "dist"
-const INDEX_PATH = "index.html"
-
 func main() {
 	godotenv.Load()
 
 	mux := http.NewServeMux()
-	m := middleware.Middleware{
-		StaticPath: STATIC_PATH,
-		IndexPath:  INDEX_PATH,
-	}
 
-	static := http.FileServer(http.Dir(STATIC_PATH))
-	mux.HandleFunc("/", m.Root(static))
+	// Handle all other requests
+	fs := http.FileServer(http.Dir("dist"))
+	mux.HandleFunc("GET /", middleware.StaticHandler("dist", "index.html", fs))
 
 	// host:port
 	addr := "127.0.0.1:8000"

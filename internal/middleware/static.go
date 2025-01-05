@@ -9,13 +9,17 @@ import (
 // This funciton takes an http.FileServer
 // if the route matches a static file it's passed to the FileServer
 // otherwise the index.html is served to allow client side routing to work
-func (m *Middleware) Root(static http.Handler) http.HandlerFunc {
+func StaticHandler(staticPath string, indexPath string, fs http.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		path := filepath.Join(m.StaticPath, r.URL.Path)
+		path := filepath.Join(staticPath, r.URL.Path)
 
 		file, err := os.Stat(path)
 		if os.IsNotExist(err) || file.IsDir() {
-			http.ServeFile(w, r, filepath.Join(m.StaticPath, m.IndexPath))
+			if r.URL.Path != "/login" && r.URL.Path != "/signup" {
+				// TODO: add session cookie auth and redirect
+			}
+
+			http.ServeFile(w, r, filepath.Join(staticPath, indexPath))
 			return
 		}
 
@@ -24,6 +28,6 @@ func (m *Middleware) Root(static http.Handler) http.HandlerFunc {
 			return
 		}
 
-		static.ServeHTTP(w, r)
+		fs.ServeHTTP(w, r)
 	}
 }
