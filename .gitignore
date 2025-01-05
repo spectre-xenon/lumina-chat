@@ -1,1 +1,4 @@
 .env
+
+# Air folder
+tmp/
