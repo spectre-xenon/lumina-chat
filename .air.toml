@@ -1,13 +1,13 @@
 root = "."
-testdata_dir = "testdata"
-tmp_dir = "tmp"
+testdata_dir = ".airtestdata"
+tmp_dir = ".air"
 
 [build]
   args_bin = []
-  bin = "./tmp/main"
-  cmd = "pnpm build && go build -o ./tmp/main ."
+  bin = "./.air/main"
+  cmd = "pnpm build && go build -o ./.air/main ."
   delay = 1000
-  exclude_dir = ["assets", "tmp", "vendor", "testdata", "node_modules", "dist"]
+  exclude_dir = ["assets", ".air", "vendor", ".airtestdata", "node_modules", "dist"]
   exclude_file = []
   exclude_regex = ["_test.go"]
   exclude_unchanged = false
