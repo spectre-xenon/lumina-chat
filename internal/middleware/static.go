@@ -19,6 +19,7 @@ func StaticHandler(staticPath string, indexPath string, fs http.Handler) http.Ha
 				// TODO: add session cookie auth and redirect
 			}
 
+			// Serve the index file
 			http.ServeFile(w, r, filepath.Join(staticPath, indexPath))
 			return
 		}
@@ -28,6 +29,7 @@ func StaticHandler(staticPath string, indexPath string, fs http.Handler) http.Ha
 			return
 		}
 
+		// Serve the static file
 		fs.ServeHTTP(w, r)
 	}
 }
