@@ -43,6 +43,6 @@ func main() {
 		ReadTimeout:  15 * time.Second,
 	}
 
-	fmt.Printf("Server is listening on: %s \n", addr)
+	fmt.Printf("Server is listening on: %s \n", os.Getenv("ORIGIN"))
 	server.ListenAndServe()
 }
