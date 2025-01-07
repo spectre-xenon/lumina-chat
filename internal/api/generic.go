@@ -3,6 +3,8 @@ package api
 import (
 	"encoding/json"
 	"net/http"
+
+	"github.com/spectre-xenon/lumina-chat/internal/db"
 )
 
 type ApiResponse[T any] struct {
@@ -22,4 +24,9 @@ func JSON(w http.ResponseWriter, response any) {
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(response)
+}
+
+func internalServerError(w http.ResponseWriter) {
+	response := ApiResponse[db.User]{ErrCode: nil}
+	JSONError(w, response, http.StatusInternalServerError)
 }

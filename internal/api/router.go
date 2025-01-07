@@ -18,7 +18,8 @@ func New(db *db.Queries, mux *http.ServeMux) App {
 
 func (a *App) LoadRoutes() {
 	// Auth
-	a.Mux.HandleFunc("POST /v1/auth/login", a.LoginHandler)
+	a.Mux.HandleFunc("POST /v1/auth/login", a.PasswordLoginHandler)
+	a.Mux.HandleFunc("POST /v1/auth/signup", a.PasswordSignupHandler)
 
 	// Handle all other requests
 	fs := http.FileServer(http.Dir("dist"))
