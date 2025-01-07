@@ -62,6 +62,8 @@ func (a App) PasswordLoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	http.SetCookie(w, cookie)
 
+	// Don't send the password hash back
+	user.PasswordHash = nil
 	response := ApiResponse[db.User]{Data: []db.User{user}}
 	JSON(w, response)
 }

@@ -23,3 +23,31 @@ func (a App) createSessionCookie(ctx context.Context, userID uuid.UUID) (cookie 
 
 	return cookie, err
 }
+
+func (a App) LogoutSessionHandler(w http.ResponseWriter, r *http.Request) {
+	// Cookie is always available as we check before handing the request to here
+	sessionCookie, _ := r.Cookie("session")
+
+	uuid, err := uuid.Parse(sessionCookie.Value)
+	if err != nil {
+		http.Error(w, "Bad Session Cookie", http.StatusBadRequest)
+		return
+	}
+
+	dbErr := a.db.DeleteSession(r.Context(), uuid)
+	if dbErr != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+	}
+
+	clearedCookie := &http.Cookie{
+		Name:     "session",
+		Value:    "",
+		Path:     "/",
+		HttpOnly: true,
+		Expires:  time.Unix(0, 0),
+	}
+
+	http.SetCookie(w, clearedCookie)
+
+	http.Redirect(w, r, "/login", http.StatusSeeOther)
+}
