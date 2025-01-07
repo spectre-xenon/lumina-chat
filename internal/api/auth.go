@@ -9,8 +9,8 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
-	"github.com/spectre-xenon/lumina-chat/internal/auth"
 	"github.com/spectre-xenon/lumina-chat/internal/db"
+	"github.com/spectre-xenon/lumina-chat/internal/hash"
 	"github.com/spectre-xenon/lumina-chat/internal/util"
 )
 
@@ -65,7 +65,7 @@ func (a App) PasswordLoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !auth.CompareHashStrings(password[0], *user.PasswordHash) {
+	if !hash.CompareHashStrings(password[0], *user.PasswordHash) {
 		// Invalid Credientials
 		response := ApiResponse[db.User]{ErrCode: util.Of(int(InvalidCredentials))}
 		JSONError(w, response, http.StatusOK)
@@ -110,7 +110,7 @@ func (a App) PasswordSignupHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	passwordHash, err := auth.GenerateHashString(password[0])
+	passwordHash, err := hash.GenerateHashString(password[0])
 	if err != nil {
 		internalServerError(w)
 		return
