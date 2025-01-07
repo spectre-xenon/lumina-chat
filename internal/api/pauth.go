@@ -1,33 +1,15 @@
 package api
 
 import (
-	"context"
 	"errors"
 	"net/http"
 	"net/mail"
-	"time"
 
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/spectre-xenon/lumina-chat/internal/db"
 	"github.com/spectre-xenon/lumina-chat/internal/hash"
 	"github.com/spectre-xenon/lumina-chat/internal/util"
 )
-
-func (a App) createSessionCookie(ctx context.Context, userID uuid.UUID) (cookie *http.Cookie, err error) {
-	expiresAt := time.Now().AddDate(0, 0, 10)
-	sessionToken, err := a.db.CreateSession(ctx, db.CreateSessionParams{UserID: userID, ExpiresAt: expiresAt})
-
-	cookie = &http.Cookie{
-		Name:     "session",
-		Value:    sessionToken.String(),
-		Path:     "/",
-		HttpOnly: true,
-		Expires:  expiresAt,
-	}
-
-	return cookie, err
-}
 
 func (a App) PasswordLoginHandler(w http.ResponseWriter, r *http.Request) {
 	// Parse form data
