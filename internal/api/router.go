@@ -23,6 +23,7 @@ func (a *App) LoadRoutes() {
 	a.Mux.HandleFunc("GET /v1/auth/login/google", a.OAuthLoginHandler)
 	a.Mux.HandleFunc("GET /v1/auth/callback/google", a.OAuthSignupHandler)
 	a.Mux.HandleFunc("GET /v1/auth/logout", a.LogoutSessionHandler)
+	a.Mux.HandleFunc("GET /v1/auth/logout_all", a.LogoutAllSessionsHandler)
 
 	// Handle all other requests
 	fs := http.FileServer(http.Dir("dist"))
