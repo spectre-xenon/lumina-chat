@@ -39,6 +39,12 @@ func redirectToLoginWithCode(w http.ResponseWriter, r *http.Request, code int) {
 }
 
 func (a App) OAuthLoginHandler(w http.ResponseWriter, r *http.Request) {
+	_, ok := a.ValidateSession(r)
+	if ok {
+		redirectToLoginWithCode(w, r, AlreadyLoggedIn)
+		return
+	}
+
 	state := hash.RandString(10)
 
 	client := newOAuthClient()

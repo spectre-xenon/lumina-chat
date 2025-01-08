@@ -1,4 +1,4 @@
-package middleware
+package api
 
 import (
 	"net/http"
@@ -9,14 +9,16 @@ import (
 // This funciton takes an http.FileServer
 // if the route matches a static file it's passed to the FileServer
 // otherwise the index.html is served to allow client side routing to work
-func StaticHandler(staticPath string, indexPath string, fs http.Handler) http.HandlerFunc {
+func (a App) StaticHandler(staticPath string, indexPath string, fs http.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		path := filepath.Join(staticPath, r.URL.Path)
 
 		file, err := os.Stat(path)
 		if os.IsNotExist(err) || file.IsDir() {
-			if r.URL.Path != "/login" && r.URL.Path != "/signup" {
-				// TODO: add session cookie auth and redirect
+			_, ok := a.ValidateSession(r)
+			if r.URL.Path != "/login" && r.URL.Path != "/signup" && !ok {
+				http.Redirect(w, r, "/login", http.StatusSeeOther)
+				return
 			}
 
 			// Serve the index file
@@ -25,7 +27,7 @@ func StaticHandler(staticPath string, indexPath string, fs http.Handler) http.Ha
 		}
 
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, "Internal Server error", http.StatusInternalServerError)
 			return
 		}
 

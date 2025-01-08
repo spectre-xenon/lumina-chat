@@ -9,4 +9,5 @@ const (
 	NoStateCookie       = 5
 	MismatchedState     = 6
 	InternalServerError = 7
+	AlreadyLoggedIn     = 8
 )

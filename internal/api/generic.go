@@ -7,6 +7,8 @@ import (
 	"github.com/spectre-xenon/lumina-chat/internal/db"
 )
 
+type HanlderWithSession func(w http.ResponseWriter, r *http.Request, session db.Session)
+
 type ApiResponse[T any] struct {
 	Data    []T  `json:"data"`
 	ErrCode *int `json:"err_code"`

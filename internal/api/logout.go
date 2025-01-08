@@ -1,8 +1,12 @@
 package api
 
-import "net/http"
+import (
+	"net/http"
 
-func (a App) LogoutSessionHandler(w http.ResponseWriter, r *http.Request) {
+	"github.com/spectre-xenon/lumina-chat/internal/db"
+)
+
+func (a App) LogoutSessionHandler(w http.ResponseWriter, r *http.Request, session db.Session) {
 	sessionToken := SafeParseSessionToken(r)
 
 	dbErr := a.db.DeleteSession(r.Context(), sessionToken)
@@ -17,7 +21,7 @@ func (a App) LogoutSessionHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/login", http.StatusSeeOther)
 }
 
-func (a App) LogoutAllSessionsHandler(w http.ResponseWriter, r *http.Request) {
+func (a App) LogoutAllSessionsHandler(w http.ResponseWriter, r *http.Request, session db.Session) {
 	sessionToken := SafeParseSessionToken(r)
 
 	session, err := a.db.GetSession(r.Context(), sessionToken)
