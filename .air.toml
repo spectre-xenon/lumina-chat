@@ -5,7 +5,7 @@ tmp_dir = ".air"
 [build]
   args_bin = []
   bin = "./.air/main"
-  cmd = "pnpm build && go build -o ./.air/main ."
+  cmd = "pnpm build && go build -o ./.air/main ./cmd/server"
   delay = 1000
   exclude_dir = ["assets", ".air", "vendor", ".airtestdata", "node_modules", "dist"]
   exclude_file = []
