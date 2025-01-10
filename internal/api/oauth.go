@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -87,6 +88,7 @@ func (a App) OAuthSignupHandler(w http.ResponseWriter, r *http.Request) {
 
 	token, err := client.Exchange(r.Context(), code, oauth2.AccessTypeOffline)
 	if err != nil {
+		log.Printf("Error exchanging oauth code: %s\n", err)
 		redirectToLoginWithCode(w, r, InternalServerError)
 		return
 	}
@@ -94,12 +96,14 @@ func (a App) OAuthSignupHandler(w http.ResponseWriter, r *http.Request) {
 	url := strings.Join([]string{"https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=", token.AccessToken}, "")
 	resp, err := http.Get(url)
 	if err != nil {
+		log.Printf("Error getting user oauth info: %s\n", err)
 		redirectToLoginWithCode(w, r, InternalServerError)
 		return
 	}
 
 	bodyData, err := io.ReadAll(resp.Body)
 	if err != nil {
+		log.Printf("Error reading user oauth info from body: %s\n", err)
 		redirectToLoginWithCode(w, r, InternalServerError)
 		return
 	}
@@ -107,6 +111,7 @@ func (a App) OAuthSignupHandler(w http.ResponseWriter, r *http.Request) {
 	var userData userData
 	marshalErr := json.Unmarshal(bodyData, &userData)
 	if marshalErr != nil {
+		log.Printf("Error unmarshaling user oauth info: %s\n", err)
 		redirectToLoginWithCode(w, r, InternalServerError)
 		return
 	}
@@ -122,6 +127,7 @@ func (a App) OAuthSignupHandler(w http.ResponseWriter, r *http.Request) {
 				PasswordHash: nil,
 			})
 		if err != nil {
+			log.Printf("Database error: %s\n", err)
 			redirectToLoginWithCode(w, r, InternalServerError)
 			return
 		}
@@ -133,6 +139,7 @@ func (a App) OAuthSignupHandler(w http.ResponseWriter, r *http.Request) {
 
 	cookie, err := a.createSessionCookie(r.Context(), userID)
 	if err != nil {
+		log.Printf("Error creating session cookie: %s\n", err)
 		redirectToLoginWithCode(w, r, InternalServerError)
 		return
 	}

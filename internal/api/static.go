@@ -1,6 +1,7 @@
 package api
 
 import (
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -27,6 +28,7 @@ func (a App) StaticHandler(staticPath string, indexPath string, fs http.Handler)
 		}
 
 		if err != nil {
+			log.Printf("Error serving static files: %s\n", err)
 			http.Error(w, "Internal Server error", http.StatusInternalServerError)
 			return
 		}

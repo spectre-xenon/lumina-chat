@@ -23,7 +23,7 @@ func main() {
 	// New connection pool
 	conn, err := pgxpool.New(ctx, os.Getenv("DATABASE_URL"))
 	if err != nil {
-		log.Panicf("Error connecting to database: %s", err)
+		log.Fatalf("Error connecting to database: %s", err)
 	}
 	defer conn.Close()
 

@@ -3,10 +3,12 @@ package api
 import (
 	"context"
 	"errors"
+	"log"
 	"net/http"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/spectre-xenon/lumina-chat/internal/db"
 	"github.com/spectre-xenon/lumina-chat/internal/util"
 )
@@ -59,6 +61,9 @@ func (a App) ValidateSession(r *http.Request) (session *db.Session, ok bool) {
 
 	dbSession, err := a.db.GetSession(r.Context(), parsedToken)
 	if err != nil {
+		if !errors.Is(pgx.ErrNoRows, err) {
+			log.Printf("Database error: %s\n", err)
+		}
 		return nil, false
 	}
 

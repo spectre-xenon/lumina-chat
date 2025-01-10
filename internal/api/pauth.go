@@ -2,6 +2,7 @@ package api
 
 import (
 	"errors"
+	"log"
 	"net/http"
 	"net/mail"
 
@@ -36,6 +37,7 @@ func (a App) PasswordLoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err != nil {
+		log.Printf("Database error: %s\n", err)
 		internalServerError(w)
 		return
 	}
@@ -56,6 +58,7 @@ func (a App) PasswordLoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	cookie, err := a.createSessionCookie(r.Context(), user.ID)
 	if err != nil {
+		log.Printf("Error creating session cookie: %s\n", err)
 		internalServerError(w)
 		return
 	}
@@ -90,24 +93,28 @@ func (a App) PasswordSignupHandler(w http.ResponseWriter, r *http.Request) {
 		JSONError(w, response, http.StatusOK)
 		return
 	} else if !errors.Is(pgx.ErrNoRows, err) {
+		log.Printf("Database error: %s\n", err)
 		internalServerError(w)
 		return
 	}
 
 	passwordHash, err := hash.GenerateHashString(password[0])
 	if err != nil {
+		log.Printf("Error generating password hash: %s\n", err)
 		internalServerError(w)
 		return
 	}
 
 	user, err := a.db.CreateUser(r.Context(), db.CreateUserParams{Username: username[0], Email: email[0], PasswordHash: &passwordHash})
 	if err != nil {
+		log.Printf("Database error: %s\n", err)
 		internalServerError(w)
 		return
 	}
 
 	cookie, err := a.createSessionCookie(r.Context(), user.ID)
 	if err != nil {
+		log.Printf("Database error: %s\n", err)
 		internalServerError(w)
 		return
 	}
