@@ -33,10 +33,19 @@ func main() {
 	app := api.New(db, http.NewServeMux())
 	app.LoadRoutes()
 
+	// Enable logging on dev enviroments
+	var finalHandler http.Handler
+	env := os.Getenv("LUMINA_ENV")
+	if env == "prod" {
+		finalHandler = app.Mux
+	} else {
+		finalHandler = middleware.Logging(app.Mux)
+	}
+
 	// host:port
 	addr := "127.0.0.1:8000"
 	server := &http.Server{
-		Handler: middleware.Logging(app.Mux),
+		Handler: finalHandler,
 		Addr:    addr,
 		// Good practice: enforce timeouts for servers you create!
 		WriteTimeout: 15 * time.Second,
