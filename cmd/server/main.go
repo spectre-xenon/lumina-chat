@@ -21,8 +21,12 @@ func main() {
 
 	// New connection pool
 	conn, err := pgxpool.New(ctx, os.Getenv("DATABASE_URL"))
+	_, err2 := conn.Query(ctx, "select username from users limit 1;")
 	if err != nil {
 		log.Fatalf("Error connecting to database: %s", err)
+	}
+	if err2 != nil {
+		log.Fatalf("Error connection test: %s\n", err2)
 	}
 	defer conn.Close()
 

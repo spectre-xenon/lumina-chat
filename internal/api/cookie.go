@@ -20,7 +20,7 @@ func SafeParseSessionToken(r *http.Request) (sessionToken uuid.UUID) {
 	return
 }
 
-func (a App) createSessionCookie(ctx context.Context, userID uuid.UUID) (cookie *http.Cookie, err error) {
+func (a *App) createSessionCookie(ctx context.Context, userID uuid.UUID) (cookie *http.Cookie, err error) {
 	// expires after 10 days
 	expiresAt := time.Now().AddDate(0, 0, 10)
 	sessionToken, err := a.db.CreateSession(ctx, db.CreateSessionParams{UserID: userID, ExpiresAt: expiresAt})
@@ -36,7 +36,7 @@ func (a App) createSessionCookie(ctx context.Context, userID uuid.UUID) (cookie 
 	return cookie, err
 }
 
-func (a App) createEmptyCookie() *http.Cookie {
+func (a *App) createEmptyCookie() *http.Cookie {
 	return &http.Cookie{
 		Name:     "session",
 		Value:    "",
@@ -48,7 +48,7 @@ func (a App) createEmptyCookie() *http.Cookie {
 
 type ValidateSession func(r *http.Request) (session *db.Session, ok bool)
 
-func (a App) ValidateSession(r *http.Request) (session *db.Session, ok bool) {
+func (a *App) ValidateSession(r *http.Request) (session *db.Session, ok bool) {
 	sessionCookie, err := r.Cookie("session")
 	if errors.Is(http.ErrNoCookie, err) {
 		return nil, false
@@ -75,7 +75,7 @@ func (a App) ValidateSession(r *http.Request) (session *db.Session, ok bool) {
 	return &dbSession, true
 }
 
-func (a App) WithAuth(next HanlderWithSession) http.HandlerFunc {
+func (a *App) WithAuth(next HanlderWithSession) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		session, ok := a.ValidateSession(r)
 		if !ok {
@@ -87,7 +87,7 @@ func (a App) WithAuth(next HanlderWithSession) http.HandlerFunc {
 	}
 }
 
-func (a App) WithNoAuth(next http.HandlerFunc) http.HandlerFunc {
+func (a *App) WithNoAuth(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		_, ok := a.ValidateSession(r)
 		if ok {

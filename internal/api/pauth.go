@@ -12,7 +12,7 @@ import (
 	"github.com/spectre-xenon/lumina-chat/internal/util"
 )
 
-func (a App) PasswordLoginHandler(w http.ResponseWriter, r *http.Request) {
+func (a *App) PasswordLoginHandler(w http.ResponseWriter, r *http.Request) {
 	// Parse form data
 	r.ParseForm()
 
@@ -71,7 +71,7 @@ func (a App) PasswordLoginHandler(w http.ResponseWriter, r *http.Request) {
 	JSON(w, response)
 }
 
-func (a App) PasswordSignupHandler(w http.ResponseWriter, r *http.Request) {
+func (a *App) PasswordSignupHandler(w http.ResponseWriter, r *http.Request) {
 	// Parse form data
 	r.ParseForm()
 

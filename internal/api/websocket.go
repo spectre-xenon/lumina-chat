@@ -8,7 +8,7 @@ import (
 	"github.com/coder/websocket"
 )
 
-func (a App) WebsocketHandler(w http.ResponseWriter, r *http.Request) {
+func (a *App) WebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	conn, err := websocket.Accept(w, r, nil)
 	if err != nil {
 		http.Error(w, "Unable to upgrade connection", http.StatusBadRequest)
