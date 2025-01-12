@@ -8,12 +8,18 @@ import (
 
 type wrappedWriter struct {
 	http.ResponseWriter
-	statusCode int
+	statusCode  int
+	wroteHeader bool
 }
 
 func (w *wrappedWriter) WriteHeader(statusCode int) {
+	if w.wroteHeader {
+		return
+	}
+
 	w.ResponseWriter.WriteHeader(statusCode)
 	w.statusCode = statusCode
+	w.wroteHeader = true
 }
 
 func Logging(next http.Handler) http.Handler {

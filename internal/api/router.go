@@ -2,41 +2,62 @@ package api
 
 import (
 	"net/http"
+	"os"
 
 	"github.com/spectre-xenon/lumina-chat/internal/db"
+	"github.com/spectre-xenon/lumina-chat/internal/middleware"
 )
 
 type App struct {
 	db  *db.Queries
-	Mux *http.ServeMux
+	mux *http.ServeMux
 }
 
 func New(db *db.Queries, mux *http.ServeMux) App {
 	return App{db, mux}
 }
 
-func (a App) HandleFunc(pattern string, handler http.HandlerFunc) {
-	a.Mux.HandleFunc(pattern, handler)
+func (a *App) handleFunc(mux *http.ServeMux, pattern string, handler http.HandlerFunc) {
+	mux.HandleFunc(pattern, handler)
 }
 
-func (a App) HandleFuncWithAuth(pattern string, handler HanlderWithSession) {
-	a.Mux.HandleFunc(pattern, a.WithAuth(handler))
+func (a *App) handleFuncWithAuth(mux *http.ServeMux, pattern string, handler HanlderWithSession) {
+	mux.HandleFunc(pattern, a.WithAuth(handler))
 }
 
-func (a App) HandleFuncWithNoAuth(pattern string, handler http.HandlerFunc) {
-	a.Mux.HandleFunc(pattern, a.WithNoAuth(handler))
+// Requires there to be no auth
+func (a *App) handleFuncWithNoAuth(mux *http.ServeMux, pattern string, handler http.HandlerFunc) {
+	mux.HandleFunc(pattern, a.WithNoAuth(handler))
 }
 
-func (a App) LoadRoutes() {
+func (a *App) GetHandler() *http.ServeMux {
+	return a.mux
+}
+
+func (a *App) LoadRoutes() {
+	loggedRouter := http.NewServeMux()
+
 	// Auth
-	a.HandleFuncWithNoAuth("POST /v1/auth/login", a.PasswordLoginHandler)
-	a.HandleFuncWithNoAuth("POST /v1/auth/signup", a.PasswordSignupHandler)
-	a.HandleFunc("GET /v1/auth/login/google", a.OAuthLoginHandler)
-	a.HandleFunc("GET /v1/auth/callback/google", a.OAuthSignupHandler)
-	a.HandleFuncWithAuth("GET /v1/auth/logout", a.LogoutSessionHandler)
-	a.HandleFuncWithAuth("GET /v1/auth/logout_all", a.LogoutAllSessionsHandler)
+	a.handleFuncWithNoAuth(loggedRouter, "POST /v1/auth/login", a.PasswordLoginHandler)
+	a.handleFuncWithNoAuth(loggedRouter, "POST /v1/auth/signup", a.PasswordSignupHandler)
+	a.handleFunc(loggedRouter, "GET /v1/auth/login/google", a.OAuthLoginHandler)
+	a.handleFuncWithNoAuth(loggedRouter, "GET /v1/auth/callback/google", a.OAuthSignupHandler)
+	a.handleFuncWithAuth(loggedRouter, "GET /v1/auth/logout", a.LogoutSessionHandler)
+	a.handleFuncWithAuth(loggedRouter, "GET /v1/auth/logout_all", a.LogoutAllSessionsHandler)
 
-	// Handle all other requests
+	// Websocket
+	a.mux.HandleFunc("GET /v1/ws", a.WebsocketHandler)
+
+	// Handle all other static requests
 	fs := http.FileServer(http.Dir("dist"))
-	a.HandleFunc("GET /", a.StaticHandler("dist", "index.html", fs))
+	loggedRouter.HandleFunc("GET /", a.StaticHandler("dist", "index.html", fs))
+
+	// Enable logging on dev enviroments
+	env := os.Getenv("LUMINA_ENV")
+	if env != "prod" {
+		a.mux.Handle("/", middleware.Logging(loggedRouter))
+	} else {
+
+		a.mux.Handle("/", loggedRouter)
+	}
 }
