@@ -19,8 +19,14 @@ func (a *App) PasswordLoginHandler(w http.ResponseWriter, r *http.Request) {
 	email, exists := r.Form["email"]
 	password, exists2 := r.Form["password"]
 
+	if !exists || !exists2 {
+		// Some field is empty
+		http.Error(w, "Bad form fields", http.StatusBadRequest)
+		return
+	}
 	_, emailErr := mail.ParseAddress(email[0])
-	if !exists || !exists2 || emailErr != nil || len(password[0]) < 8 {
+
+	if emailErr != nil || len(password[0]) < 8 {
 		// Some field is empty
 		http.Error(w, "Bad form fields", http.StatusBadRequest)
 		return
