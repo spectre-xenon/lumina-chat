@@ -29,6 +29,7 @@ func (a *App) createSessionCookie(ctx context.Context, userID uuid.UUID) (cookie
 		Name:     "session",
 		Value:    sessionToken.String(),
 		Path:     "/",
+		SameSite: http.SameSiteLaxMode,
 		HttpOnly: true,
 		Expires:  expiresAt,
 	}
