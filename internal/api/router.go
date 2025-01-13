@@ -38,12 +38,19 @@ func (a *App) LoadRoutes() {
 	loggedRouter := http.NewServeMux()
 
 	// Auth
+	//  Password auth
 	a.handleFuncWithNoAuth(loggedRouter, "POST /v1/auth/login", a.PasswordLoginHandler)
 	a.handleFuncWithNoAuth(loggedRouter, "POST /v1/auth/signup", a.PasswordSignupHandler)
+	//  OAuth auth
 	a.handleFunc(loggedRouter, "GET /v1/auth/login/google", a.OAuthLoginHandler)
 	a.handleFuncWithNoAuth(loggedRouter, "GET /v1/auth/callback/google", a.OAuthSignupHandler)
+	//  Logging out
 	a.handleFuncWithAuth(loggedRouter, "GET /v1/auth/logout", a.LogoutSessionHandler)
 	a.handleFuncWithAuth(loggedRouter, "GET /v1/auth/logout_all", a.LogoutAllSessionsHandler)
+	//  Check auth status
+	a.handleFuncWithAuth(loggedRouter, "GET /v1/auth", func(w http.ResponseWriter, r *http.Request, session db.Session) {
+		w.WriteHeader(http.StatusOK)
+	})
 
 	// Websocket
 	a.mux.HandleFunc("GET /v1/ws", a.WebsocketHandler)

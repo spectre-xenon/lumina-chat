@@ -16,12 +16,6 @@ func (a *App) StaticHandler(staticPath string, indexPath string, fs http.Handler
 
 		file, err := os.Stat(path)
 		if os.IsNotExist(err) || file.IsDir() {
-			_, ok := a.ValidateSession(r)
-			if r.URL.Path != "/login" && r.URL.Path != "/signup" && !ok {
-				http.Redirect(w, r, "/login", http.StatusSeeOther)
-				return
-			}
-
 			// Serve the index file
 			http.ServeFile(w, r, filepath.Join(staticPath, indexPath))
 			return
