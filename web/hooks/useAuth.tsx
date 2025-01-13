@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, Dispatch, SetStateAction } from "react";
 import { useLocation } from "wouter";
 
 export function useAuth() {
@@ -24,5 +24,9 @@ export function useAuth() {
     checkAuthed();
   }, [location]);
 
-  return [authed, loading];
+  return [authed, setAuthed, loading] as [
+    boolean,
+    Dispatch<SetStateAction<boolean>>,
+    boolean,
+  ];
 }

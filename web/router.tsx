@@ -1,6 +1,8 @@
 import { Switch, Route, useLocation } from "wouter";
 import { useAuth } from "~/hooks/useAuth";
 import { NotFound } from "./pages/404";
+import { LoginPage } from "./pages/login";
+import { Toaster } from "./components/ui/sonner";
 
 const allowedLocations: { [key: string]: boolean } = {
   "/login": true,
@@ -13,24 +15,28 @@ const notAllowedLocations: { [key: string]: boolean } = {
 
 export function Router() {
   const [location, navigate] = useLocation();
-  const [authed, loading] = useAuth();
+  const [authed, setAuthed, loading] = useAuth();
 
   if (loading) {
-    return <h1>loading</h1>;
+    return "loading";
   }
 
   if (!authed && !allowedLocations[location] && notAllowedLocations[location]) {
-    navigate("/login");
+    navigate("/login", { replace: true });
   }
 
   return (
-    <Switch>
-      <Route path="/">home</Route>
-      <Route path="/login">login</Route>
-      <Route path="/signup" />
+    <>
+      <Toaster richColors />
 
-      {/* Default route in a switch */}
-      <Route component={NotFound}></Route>
-    </Switch>
+      <Switch>
+        <Route path="/">home</Route>
+        <Route path="/login">{() => <LoginPage setAuthed={setAuthed} />}</Route>
+        <Route path="/signup" />
+
+        {/* Default route in a switch */}
+        <Route component={NotFound}></Route>
+      </Switch>
+    </>
   );
 }

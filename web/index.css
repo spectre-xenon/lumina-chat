@@ -2,12 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: "Roboto", sans-serif;
-  background-color: black;
-  color: white;
-}
-
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -69,6 +63,7 @@ body {
     @apply border-border;
   }
   body {
+    font-family: "Roboto", sans-serif;
     @apply bg-background text-foreground;
   }
 }
