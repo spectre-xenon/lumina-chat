@@ -18,7 +18,7 @@ import {
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { simpleFetch } from "~/hooks/useFetch";
-import { statusCodesMap } from "~/lib/statuscodes";
+import { apiCodesMap, genericErrorsMap } from "~/lib/statuscodes";
 import { ApiResponse } from "~/types/api";
 import { User } from "~/types/user";
 
@@ -38,8 +38,7 @@ export function LoginPage({
 
     if (errcode) {
       requestAnimationFrame(() =>
-        toast.error(statusCodesMap[Number(errcode)], {
-          className: "bg-red-600",
+        toast.error(apiCodesMap[Number(errcode)], {
           position: "top-center",
         }),
       );
@@ -48,6 +47,13 @@ export function LoginPage({
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+
+    // Generic checks
+    if (email === "" || password === "")
+      return toast.error(genericErrorsMap["emptyFormField"]);
+
+    if (password.length < 8)
+      return toast.error(genericErrorsMap["shortPassword"]);
 
     const body = new URLSearchParams({
       email,
@@ -66,10 +72,8 @@ export function LoginPage({
 
     // if Error do nothing and notify
     if (data.err_code) {
-      return toast.error(statusCodesMap[data.err_code], {
-        className: "bg-red-600",
+      return toast.error(apiCodesMap[data.err_code], {
         position: "top-center",
-        richColors: true,
       });
     }
 
@@ -97,7 +101,6 @@ export function LoginPage({
                   name="email"
                   type="email"
                   placeholder="m@example.com"
-                  required
                   onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
@@ -107,8 +110,6 @@ export function LoginPage({
                   id="password"
                   name="password"
                   type="password"
-                  minLength={8}
-                  required
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </div>
