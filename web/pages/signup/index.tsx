@@ -134,6 +134,7 @@ export function SignupPage({
               <Button
                 variant="outline"
                 className="w-full"
+                type="button"
                 onClick={() => {
                   window.open("/v1/auth/login/google", "_self");
                 }}
