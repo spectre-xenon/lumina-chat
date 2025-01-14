@@ -35,7 +35,7 @@ func newOAuthClient() *oauth2.Config {
 }
 
 func redirectToLoginWithCode(w http.ResponseWriter, r *http.Request, code int) {
-	url := strings.Join([]string{os.Getenv("ORIGIN"), "/login?errcode=", strconv.Itoa(code)}, "")
+	url := strings.Join([]string{"/login?errcode=", strconv.Itoa(code)}, "")
 	http.Redirect(w, r, url, http.StatusSeeOther)
 }
 
