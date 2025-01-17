@@ -27,9 +27,15 @@ export function SignupPage({
 }: {
   setAuthed: Dispatch<SetStateAction<boolean>>;
 }) {
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    password: "",
+  });
+
+  function updateFormData(key: keyof typeof formData, value: string) {
+    setFormData({ ...formData, [key]: value });
+  }
 
   const [, navigate] = useLocation();
   const params = useSearch();
@@ -50,20 +56,20 @@ export function SignupPage({
     e.preventDefault();
 
     // Generic checks
-    if (username === "" || email === "" || password === "")
+    if (
+      formData["username"] === "" ||
+      formData["email"] === "" ||
+      formData["password"] === ""
+    )
       return toast.error(genericErrorsMap["emptyFormField"]);
 
-    if (username.length < 3)
+    if (formData["username"].length < 3)
       return toast.error(genericErrorsMap["shortUsername"]);
 
-    if (password.length < 8)
+    if (formData["password"].length < 8)
       return toast.error(genericErrorsMap["shortPassword"]);
 
-    const body = new URLSearchParams({
-      username,
-      email,
-      password,
-    });
+    const body = new URLSearchParams(formData);
 
     const data = await simpleFetch<ApiResponse<User>>(
       "/v1/auth/signup",
@@ -106,7 +112,7 @@ export function SignupPage({
                   name="username"
                   type="username"
                   placeholder="jhin"
-                  onChange={(e) => setUsername(e.target.value)}
+                  onChange={(e) => updateFormData("username", e.target.value)}
                 />
               </div>
               <div className="grid gap-2">
@@ -116,7 +122,7 @@ export function SignupPage({
                   name="email"
                   type="email"
                   placeholder="m@example.com"
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => updateFormData("email", e.target.value)}
                 />
               </div>
               <div className="grid gap-2">
@@ -125,7 +131,7 @@ export function SignupPage({
                   id="password"
                   name="password"
                   type="password"
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => updateFormData("password", e.target.value)}
                 />
               </div>
               <Button type="submit" className="w-full">

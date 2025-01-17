@@ -27,8 +27,14 @@ export function LoginPage({
 }: {
   setAuthed: Dispatch<SetStateAction<boolean>>;
 }) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+
+  function updateFormData(key: keyof typeof formData, value: string) {
+    setFormData({ ...formData, [key]: value });
+  }
 
   const [, navigate] = useLocation();
   const params = useSearch();
@@ -49,17 +55,13 @@ export function LoginPage({
     e.preventDefault();
 
     // Generic checks
-    if (email === "" || password === "")
+    if (formData["email"] === "" || formData["password"] === "")
       return toast.error(genericErrorsMap["emptyFormField"]);
 
-    if (password.length < 8)
+    if (formData["password"].length < 8)
       return toast.error(genericErrorsMap["shortPassword"]);
 
-    const body = new URLSearchParams({
-      email,
-      password,
-    });
-
+    const body = new URLSearchParams(formData);
     const data = await simpleFetch<ApiResponse<User>>(
       "/v1/auth/login",
       navigate,
@@ -101,7 +103,7 @@ export function LoginPage({
                   name="email"
                   type="email"
                   placeholder="m@example.com"
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => updateFormData("email", e.target.value)}
                 />
               </div>
               <div className="grid gap-2">
@@ -110,7 +112,7 @@ export function LoginPage({
                   id="password"
                   name="password"
                   type="password"
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => updateFormData("password", e.target.value)}
                 />
               </div>
               <Button type="submit" className="w-full">
