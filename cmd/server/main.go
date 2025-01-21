@@ -6,12 +6,14 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"runtime"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 	"github.com/spectre-xenon/lumina-chat/internal/api"
 	"github.com/spectre-xenon/lumina-chat/internal/db"
+	"github.com/spectre-xenon/lumina-chat/internal/workerpool"
 )
 
 func main() {
@@ -32,8 +34,11 @@ func main() {
 
 	db := db.New(conn)
 
+	workerPool := workerpool.NewWorkerPool(runtime.NumCPU())
+	defer workerPool.Close()
+
 	// Create new api instance and define all routes
-	app := api.New(db, http.NewServeMux())
+	app := api.New(db, http.NewServeMux(), workerPool)
 	app.LoadRoutes()
 
 	// host:port

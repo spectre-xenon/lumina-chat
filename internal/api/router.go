@@ -6,15 +6,17 @@ import (
 
 	"github.com/spectre-xenon/lumina-chat/internal/db"
 	"github.com/spectre-xenon/lumina-chat/internal/middleware"
+	"github.com/spectre-xenon/lumina-chat/internal/workerpool"
 )
 
 type App struct {
-	db  *db.Queries
-	mux *http.ServeMux
+	db         *db.Queries
+	mux        *http.ServeMux
+	workerPool *workerpool.WorkerPool
 }
 
-func New(db *db.Queries, mux *http.ServeMux) App {
-	return App{db, mux}
+func New(db *db.Queries, mux *http.ServeMux, workerPool *workerpool.WorkerPool) App {
+	return App{db, mux, workerPool}
 }
 
 func (a *App) handleFunc(mux *http.ServeMux, pattern string, handler http.HandlerFunc) {
@@ -51,9 +53,6 @@ func (a *App) LoadRoutes() {
 	a.handleFuncWithAuth(loggedRouter, "GET /v1/auth", func(w http.ResponseWriter, r *http.Request, session db.Session) {
 		w.WriteHeader(http.StatusOK)
 	})
-
-	// Websocket
-	a.mux.HandleFunc("GET /v1/ws", a.WebsocketHandler)
 
 	// Handle all other static requests
 	fs := http.FileServer(http.Dir("dist"))

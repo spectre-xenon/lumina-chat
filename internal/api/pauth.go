@@ -55,7 +55,13 @@ func (a *App) PasswordLoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !hash.CompareHashStrings(password[0], *user.PasswordHash) {
+	resp := a.workerPool.Submit(func() any {
+		return hash.CompareHashStrings(password[0], *user.PasswordHash)
+	})
+
+	result := <-resp
+
+	if !result.(bool) {
 		// Invalid Credientials
 		response := ApiResponse[db.User]{ErrCode: util.Of(int(InvalidCredentials))}
 		JSONError(w, response, http.StatusOK)
@@ -104,14 +110,22 @@ func (a *App) PasswordSignupHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	passwordHash, err := hash.GenerateHashString(password[0])
-	if err != nil {
+	var hashErr error
+	resp := a.workerPool.Submit(func() any {
+		passwordHash, err := hash.GenerateHashString(password[0])
+		hashErr = err
+		return passwordHash
+	})
+
+	result := <-resp
+
+	if hashErr != nil {
 		log.Printf("Error generating password hash: %s\n", err)
 		internalServerError(w)
 		return
 	}
 
-	user, err := a.db.CreateUser(r.Context(), db.CreateUserParams{Username: username[0], Email: email[0], PasswordHash: &passwordHash})
+	user, err := a.db.CreateUser(r.Context(), db.CreateUserParams{Username: username[0], Email: email[0], PasswordHash: result.(*string)})
 	if err != nil {
 		log.Printf("Database error: %s\n", err)
 		internalServerError(w)
