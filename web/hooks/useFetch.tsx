@@ -24,7 +24,7 @@ export function useFetch<T>(url: string, opts?: RequestInit) {
     fetchData();
   }, [url, opts, navigate]);
 
-  return { data, loading };
+  return [data, loading] as [T, boolean];
 }
 
 export async function simpleFetch<T>(
