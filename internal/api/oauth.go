@@ -39,7 +39,7 @@ func redirectToLoginWithCode(w http.ResponseWriter, r *http.Request, code int) {
 	http.Redirect(w, r, url, http.StatusSeeOther)
 }
 
-func (a *App) OAuthLoginHandler(w http.ResponseWriter, r *http.Request) {
+func (a *App) oauthLoginHandler(w http.ResponseWriter, r *http.Request) {
 	_, ok := a.ValidateSession(r)
 	if ok {
 		redirectToLoginWithCode(w, r, AlreadyLoggedIn)
@@ -64,7 +64,7 @@ func (a *App) OAuthLoginHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, url, http.StatusSeeOther)
 }
 
-func (a *App) OAuthSignupHandler(w http.ResponseWriter, r *http.Request) {
+func (a *App) oauthSignupHandler(w http.ResponseWriter, r *http.Request) {
 	code := r.URL.Query().Get("code")
 	state := r.URL.Query().Get("state")
 

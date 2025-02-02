@@ -10,8 +10,13 @@ import (
 // This funciton takes an http.FileServer
 // if the route matches a static file it's passed to the FileServer
 // otherwise the index.html is served to allow client side routing to work
-func (a *App) StaticHandler(staticPath string, indexPath string, fs http.Handler) http.HandlerFunc {
+func (a *App) staticHandler(staticPath string, indexPath string, fs http.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
 		path := filepath.Join(staticPath, r.URL.Path)
 
 		file, err := os.Stat(path)
