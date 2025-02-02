@@ -37,33 +37,46 @@ func (a *App) GetHandler() *http.ServeMux {
 }
 
 func (a *App) LoadRoutes() {
-	loggedRouter := http.NewServeMux()
-
+	apiRouter := http.NewServeMux()
 	// Auth
 	//  Password auth
-	a.handleFuncWithNoAuth(loggedRouter, "POST /v1/auth/login", a.PasswordLoginHandler)
-	a.handleFuncWithNoAuth(loggedRouter, "POST /v1/auth/signup", a.PasswordSignupHandler)
+	a.handleFuncWithNoAuth(apiRouter, "POST /auth/login", a.PasswordLoginHandler)
+	a.handleFuncWithNoAuth(apiRouter, "POST /auth/signup", a.PasswordSignupHandler)
 	//  OAuth auth
-	a.handleFunc(loggedRouter, "GET /v1/auth/login/google", a.OAuthLoginHandler)
-	a.handleFuncWithNoAuth(loggedRouter, "GET /v1/auth/callback/google", a.OAuthSignupHandler)
+	a.handleFunc(apiRouter, "GET /auth/login/google", a.OAuthLoginHandler)
+	a.handleFuncWithNoAuth(apiRouter, "GET /auth/callback/google", a.OAuthSignupHandler)
 	//  Logging out
-	a.handleFuncWithAuth(loggedRouter, "GET /v1/auth/logout", a.LogoutSessionHandler)
-	a.handleFuncWithAuth(loggedRouter, "GET /v1/auth/logout_all", a.LogoutAllSessionsHandler)
+	a.handleFuncWithAuth(apiRouter, "GET /auth/logout", a.LogoutSessionHandler)
+	a.handleFuncWithAuth(apiRouter, "GET /auth/logout_all", a.LogoutAllSessionsHandler)
 	//  Check auth status
-	a.handleFuncWithAuth(loggedRouter, "GET /v1/auth", func(w http.ResponseWriter, r *http.Request, session db.Session) {
+	a.handleFuncWithAuth(apiRouter, "GET /auth", func(w http.ResponseWriter, r *http.Request, session db.Session) {
 		w.WriteHeader(http.StatusOK)
 	})
 
-	// Handle all other static requests
-	fs := http.FileServer(http.Dir("dist"))
-	loggedRouter.HandleFunc("GET /", a.StaticHandler("dist", "index.html", fs))
+	// User
+	a.handleFuncWithAuth(apiRouter, "PATCH /user", a.PatchUserHandler)
+
+	// Chat
+	a.handleFuncWithAuth(apiRouter, "GET /chats", a.GetUserChatsHandler)
 
 	// Enable logging on dev enviroments
 	env := os.Getenv("LUMINA_ENV")
+	var handlerStack middleware.Middleware
 	if env != "prod" {
-		a.mux.Handle("/", middleware.Logging(loggedRouter))
+		handlerStack = middleware.CreateStack(
+			middleware.Logging,
+			middleware.LimitBodySize,
+		)
 	} else {
-
-		a.mux.Handle("/", loggedRouter)
+		handlerStack = middleware.CreateStack(
+			middleware.LimitBodySize,
+		)
 	}
+
+	// Handle api routes
+	a.mux.Handle("/v1/", http.StripPrefix("/v1", handlerStack(apiRouter)))
+
+	// Handle all other static requests
+	fs := http.FileServer(http.Dir("dist"))
+	a.mux.HandleFunc("/", a.StaticHandler("dist", "index.html", fs))
 }
