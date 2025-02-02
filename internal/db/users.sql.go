@@ -44,7 +44,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateU
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, username, email, password_hash, created_at
+SELECT id, username, email, password_hash, created_at, picture, color
 FROM users
 WHERE email = $1
 `
@@ -58,12 +58,14 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.Email,
 		&i.PasswordHash,
 		&i.CreatedAt,
+		&i.Picture,
+		&i.Color,
 	)
 	return i, err
 }
 
 const getUserByID = `-- name: GetUserByID :one
-SELECT id, username, email, password_hash, created_at
+SELECT id, username, email, password_hash, created_at, picture, color
 FROM users
 WHERE id = $1
 `
@@ -77,6 +79,24 @@ func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (User, error) {
 		&i.Email,
 		&i.PasswordHash,
 		&i.CreatedAt,
+		&i.Picture,
+		&i.Color,
 	)
 	return i, err
+}
+
+const updateUserColor = `-- name: UpdateUserColor :exec
+UPDATE users
+SET color = $2
+WHERE id = $1
+`
+
+type UpdateUserColorParams struct {
+	ID    uuid.UUID `json:"id"`
+	Color string    `json:"color"`
+}
+
+func (q *Queries) UpdateUserColor(ctx context.Context, arg UpdateUserColorParams) error {
+	_, err := q.db.Exec(ctx, updateUserColor, arg.ID, arg.Color)
+	return err
 }

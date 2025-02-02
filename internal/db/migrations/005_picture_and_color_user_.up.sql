@@ -1,0 +1,2 @@
+ALTER TABLE users ADD picture TEXT,
+ADD color TEXT NOT NULL DEFAULT '#FFFFFF';

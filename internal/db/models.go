@@ -10,6 +10,27 @@ import (
 	"github.com/google/uuid"
 )
 
+type Chat struct {
+	ID         uuid.UUID `json:"id"`
+	Name       string    `json:"name"`
+	InviteLink *string   `json:"invite_link"`
+	Picture    *string   `json:"picture"`
+}
+
+type ChatMember struct {
+	ChatID   uuid.UUID `json:"chat_id"`
+	UserID   uuid.UUID `json:"user_id"`
+	JoinedAt time.Time `json:"joined_at"`
+}
+
+type Message struct {
+	ID       int64     `json:"id"`
+	ChatID   uuid.UUID `json:"chat_id"`
+	SenderID uuid.UUID `json:"sender_id"`
+	Content  string    `json:"content"`
+	SentAt   time.Time `json:"sent_at"`
+}
+
 type Session struct {
 	SessionToken uuid.UUID `json:"session_token"`
 	UserID       uuid.UUID `json:"user_id"`
@@ -22,4 +43,6 @@ type User struct {
 	Email        string    `json:"email"`
 	PasswordHash *string   `json:"password_hash"`
 	CreatedAt    time.Time `json:"created_at"`
+	Picture      *string   `json:"picture"`
+	Color        string    `json:"color"`
 }

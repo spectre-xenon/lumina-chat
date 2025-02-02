@@ -1,0 +1,9 @@
+CREATE TABLE messages (
+  id BIGSERIAL PRIMARY KEY,
+  chat_id UUID NOT NULL,
+  sender_id UUID NOT NULL,
+  content TEXT NOT NULL,
+  sent_at TIMESTAMPTZ DEFAULT NOW () NOT NULL,
+  FOREIGN KEY (chat_id) REFERENCES chats (id) ON DELETE CASCADE,
+  FOREIGN KEY (sender_id) REFERENCES users (id) ON DELETE CASCADE
+);
