@@ -4,14 +4,11 @@ import { NotFound } from "./pages/404";
 import { LoginPage } from "./pages/login";
 import { Toaster } from "./components/ui/sonner";
 import { SignupPage } from "./pages/signup";
+import { Home } from "./pages/home";
 
 const allowedLocations: { [key: string]: boolean } = {
   "/login": true,
   "/signup": true,
-};
-
-const notAllowedLocations: { [key: string]: boolean } = {
-  "/": true,
 };
 
 export function Router() {
@@ -22,24 +19,33 @@ export function Router() {
     return "loading";
   }
 
-  if (!authed && !allowedLocations[location] && notAllowedLocations[location]) {
+  if (!authed && !allowedLocations[location]) {
     navigate("/login", { replace: true });
   }
 
   return (
     <>
-      <Toaster richColors />
-
       <Switch>
-        <Route path="/">home</Route>
-        <Route path="/login">{() => <LoginPage setAuthed={setAuthed} />}</Route>
+        {/* Auth */}
+        <Route path="/login">
+          <LoginPage setAuthed={setAuthed} />
+        </Route>
         <Route path="/signup">
-          {() => <SignupPage setAuthed={setAuthed} />}
+          <SignupPage setAuthed={setAuthed} />
+        </Route>
+
+        {/* index */}
+        <Route path="/:chatId?">
+          <Home />
         </Route>
 
         {/* Default route in a switch */}
-        <Route component={NotFound}></Route>
+        <Route>
+          <NotFound />
+        </Route>
       </Switch>
+
+      <Toaster richColors />
     </>
   );
 }
