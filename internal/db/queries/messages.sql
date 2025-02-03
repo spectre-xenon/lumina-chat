@@ -1,8 +1,8 @@
 -- Create a new message
 -- name: CreateMessage :one
-INSERT INTO messages (id, chat_id, sender_id, content, sent_at)
-VALUES (gen_random_uuid(), $1, $2, $3, NOW())
-RETURNING id, content, sender_id, sent_at;
+INSERT INTO messages (chat_id, sender_id, content, sent_at)
+VALUES ($1, $2, $3, NOW())
+RETURNING *;
 
 -- Get all messages in a chat
 -- name: GetChatMessages :many

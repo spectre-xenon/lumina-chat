@@ -1,17 +1,34 @@
 import { StringRouteParams, useParams } from "wouter";
 import { Logo } from "../../components/logo";
-import { Button } from "~/components/ui/button";
-import { BadgePlus } from "lucide-react";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import { Chat } from "~/types/chat";
 import { useFetch } from "~/hooks/useFetch";
 import { ApiResponse } from "~/types/api";
 import { ChatLink, ChatLinkSkeleton } from "~/components/chat-link";
+import { CreateForm } from "./create-form";
+import { toast } from "sonner";
+import { apiCodesMap } from "~/lib/statuscodes";
+import { sortChatsByTime } from "~/lib/time";
 
 export function Home() {
   const { chatId } = useParams<StringRouteParams<"/:chatId?">>();
 
-  const [chats, chatsLoading] = useFetch<ApiResponse<Chat[]>>("/v1/chats");
+  const [chats, chatsLoading, setChats] =
+    useFetch<ApiResponse<Chat[]>>("/v1/chats");
+
+  function addChat(chat: Chat) {
+    const oldChats = chats.data ? chats.data : [];
+    setChats({ ...chats, data: sortChatsByTime([...oldChats, chat]) });
+  }
+
+  if (chats) {
+    requestAnimationFrame(() => {
+      if (chats["err_code"])
+        toast.error(apiCodesMap[chats["err_code"]], {
+          position: "top-center",
+        });
+    });
+  }
 
   return (
     <main className="flex h-screen w-screen gap-4 p-2">
@@ -22,17 +39,17 @@ export function Home() {
           {/* create chat button */}
           <div className="flex items-center justify-between">
             <h1 className="text-lg">Chats</h1>
-            <Button variant="ghost">
-              <BadgePlus />
-            </Button>
+            <CreateForm addChat={addChat} />
           </div>
 
           {/* chats */}
           <ScrollArea>
-            <div className="flex flex-col items-center justify-center px-3">
+            <div className="flex flex-col px-3">
               {chatsLoading ? (
                 // Chat skeletons
-                [...Array(7).keys()].map(() => <ChatLinkSkeleton />)
+                [...Array(7).keys()].map((key) => (
+                  <ChatLinkSkeleton key={key} />
+                ))
               ) : chats["data"] ? (
                 // Chats if exists
                 chats["data"].map((chat) => (

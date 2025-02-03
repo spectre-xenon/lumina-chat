@@ -14,7 +14,9 @@ export const apiCodesMap: { [key: number]: string } = {
 };
 
 export const genericErrorsMap = {
-  emptyFormField: "Please fill all form fields!",
+  emptyFormField: "Please fill all required form fields!",
   shortPassword: "Password must be atleast 8 characters long!",
   shortUsername: "Username must be atleast 3 characters long!",
+  shortChatName: "Chat name must be atleast 3 characters long!",
+  longUsername: "Username must be less than 27 characters",
 } as const;

@@ -4,33 +4,25 @@ INSERT INTO chats (name, picture, invite_link)
 VALUES ($1, $2, $3)
 RETURNING id, name, picture, invite_link;
 
--- Get all chats for a user
+-- Get all chats for a user with their latest message (if exists)
 -- name: GetUserChats :many
+WITH LatestMessages AS (
+  SELECT DISTINCT ON (m.chat_id)
+    m.*
+  FROM messages m
+  ORDER BY m.chat_id, m.sent_at DESC  -- Ensure latest message per chat
+)
 SELECT
-    c.id,
-    c.name,
-    c.invite_link,
-    c.picture,
-    m.id AS last_message_id,
-    m.sender_id AS last_message_sender,
-    m.content AS last_message_content,
-    m.sent_at AS last_message_sent_at
-FROM
-    chats c
-JOIN
-    chat_members cm ON c.id = cm.chat_id
-LEFT JOIN LATERAL (
-    SELECT id, sender_id, content, sent_at
-    FROM messages
-    WHERE chat_id = c.id
-    ORDER BY sent_at DESC
-    LIMIT 1
-) m ON true
+  c.*,
+  sqlc.embed(messages)
+FROM chats c
+JOIN chat_members cm ON c.id = cm.chat_id
+LEFT JOIN LatestMessages messages
+  ON c.id = messages.chat_id 
 WHERE
-    cm.user_id = $1
+  cm.user_id = $1
 ORDER BY
-    m.sent_at DESC NULLS LAST;
-
+  messages.sent_at DESC NULLS LAST;  -- Chats with no messages appear last
 
 -- Get chat by ID
 -- name: GetChatByID :one

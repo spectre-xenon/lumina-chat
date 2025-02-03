@@ -1,28 +1,36 @@
 import { Link } from "wouter";
 import { Chat } from "~/types/chat";
 import { Skeleton } from "./ui/skeleton";
+import { formatDate } from "~/lib/time";
+import { Sparkles } from "lucide-react";
 
 const MAX_CHARS = 25;
 
 export function ChatLink({ chat }: { chat: Chat }) {
-  const senderLength = chat["last_message"].sender.length;
-  const lastMessage =
-    chat["last_message"].sender +
-    ": " +
-    chat["last_message"].content.substring(0, MAX_CHARS - senderLength) +
-    "...";
+  const lastMessage = chat["message"].content.substring(0, MAX_CHARS) + "...";
 
   return (
     <Link
       to={`/${chat["id"]}`}
       className="flex items-center justify-center gap-3 rounded-lg bg-background p-4 hover:bg-muted"
     >
-      <img src={chat["picture"]} className="h-14 w-14 rounded-full" />
+      {chat["picture"] ? (
+        <img
+          src={chat["picture"]}
+          className="h-14 w-14 rounded-full border object-cover object-center"
+        />
+      ) : (
+        <div className="flex h-14 w-14 items-center justify-center rounded-full border">
+          <Sparkles />
+        </div>
+      )}
 
       <div className="flex flex-grow flex-col gap-2">
         <div className="flex justify-between">
           <p className="font-bold">{chat["name"]}</p>
-          <p className="text-muted-foreground">09:18 pm</p>
+          <p className="text-muted-foreground">
+            {formatDate(chat["message"].sent_at)}
+          </p>
         </div>
         <div>
           <p className="overflow-hidden whitespace-nowrap text-muted-foreground">

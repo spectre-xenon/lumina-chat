@@ -14,7 +14,10 @@ import (
 
 func (a *App) passwordLoginHandler(w http.ResponseWriter, r *http.Request) {
 	// Parse form data
-	r.ParseForm()
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "Request body too large", http.StatusRequestEntityTooLarge)
+		return
+	}
 
 	email, exists := r.Form["email"]
 	password, exists2 := r.Form["password"]
@@ -85,14 +88,17 @@ func (a *App) passwordLoginHandler(w http.ResponseWriter, r *http.Request) {
 
 func (a *App) passwordSignupHandler(w http.ResponseWriter, r *http.Request) {
 	// Parse form data
-	r.ParseForm()
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "Request body too large", http.StatusRequestEntityTooLarge)
+		return
+	}
 
 	username, exists := r.Form["username"]
 	email, exists2 := r.Form["email"]
 	password, exists3 := r.Form["password"]
 
 	_, emailErr := mail.ParseAddress(email[0])
-	if !exists || !exists2 || !exists3 || emailErr != nil || len(username[0]) < 3 || len(password[0]) < 8 {
+	if !exists || !exists2 || !exists3 || emailErr != nil || len(username[0]) < 3 || len(password[0]) < 8 || len(username[0]) > 27 {
 		// Some field is empty
 		http.Error(w, "Bad form fields", http.StatusBadRequest)
 		return

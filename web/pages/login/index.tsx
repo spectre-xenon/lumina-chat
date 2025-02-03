@@ -88,7 +88,7 @@ export function LoginPage({
     <div className="flex h-screen w-screen flex-col items-center justify-center gap-6">
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">Login</CardTitle>
+          <CardTitle className="text-2xl">Login*</CardTitle>
           <CardDescription>
             Enter your email below to login to your account
           </CardDescription>
@@ -97,7 +97,7 @@ export function LoginPage({
           <form onSubmit={handleSubmit}>
             <div className="flex flex-col gap-6">
               <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">Email*</Label>
                 <Input
                   id="email"
                   name="email"
@@ -107,7 +107,7 @@ export function LoginPage({
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">Password*</Label>
                 <Input
                   id="password"
                   name="password"

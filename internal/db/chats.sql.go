@@ -7,7 +7,6 @@ package db
 
 import (
 	"context"
-	"time"
 
 	"github.com/google/uuid"
 )
@@ -15,7 +14,7 @@ import (
 const createChat = `-- name: CreateChat :one
 INSERT INTO chats (name, picture, invite_link)
 VALUES ($1, $2, $3)
-RETURNING id, name, invite_link
+RETURNING id, name, picture, invite_link
 `
 
 type CreateChatParams struct {
@@ -27,6 +26,7 @@ type CreateChatParams struct {
 type CreateChatRow struct {
 	ID         uuid.UUID `json:"id"`
 	Name       string    `json:"name"`
+	Picture    *string   `json:"picture"`
 	InviteLink *string   `json:"invite_link"`
 }
 
@@ -34,7 +34,12 @@ type CreateChatRow struct {
 func (q *Queries) CreateChat(ctx context.Context, arg CreateChatParams) (CreateChatRow, error) {
 	row := q.db.QueryRow(ctx, createChat, arg.Name, arg.Picture, arg.InviteLink)
 	var i CreateChatRow
-	err := row.Scan(&i.ID, &i.Name, &i.InviteLink)
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Picture,
+		&i.InviteLink,
+	)
 	return i, err
 }
 
@@ -50,11 +55,13 @@ func (q *Queries) DeleteChat(ctx context.Context, id uuid.UUID) error {
 }
 
 const getChatByID = `-- name: GetChatByID :one
+
 SELECT id, name, invite_link, picture
 FROM chats
 WHERE id = $1
 `
 
+// Chats with no messages appear last
 // Get chat by ID
 func (q *Queries) GetChatByID(ctx context.Context, id uuid.UUID) (Chat, error) {
 	row := q.db.QueryRow(ctx, getChatByID, id)
@@ -69,44 +76,34 @@ func (q *Queries) GetChatByID(ctx context.Context, id uuid.UUID) (Chat, error) {
 }
 
 const getUserChats = `-- name: GetUserChats :many
+WITH LatestMessages AS (
+  SELECT DISTINCT ON (m.chat_id)
+    m.id, m.chat_id, m.sender_id, m.content, m.sent_at
+  FROM messages m
+  ORDER BY m.chat_id, m.sent_at DESC  -- Ensure latest message per chat
+)
 SELECT
-    c.id,
-    c.name,
-    c.invite_link,
-    c.picture,
-    m.id AS last_message_id,
-    m.sender_id AS last_message_sender,
-    m.content AS last_message_content,
-    m.sent_at AS last_message_sent_at
-FROM
-    chats c
-JOIN
-    chat_members cm ON c.id = cm.chat_id
-LEFT JOIN LATERAL (
-    SELECT id, sender_id, content, sent_at
-    FROM messages
-    WHERE chat_id = c.id
-    ORDER BY sent_at DESC
-    LIMIT 1
-) m ON true
+  c.id, c.name, c.invite_link, c.picture,
+  messages.id, messages.chat_id, messages.sender_id, messages.content, messages.sent_at
+FROM chats c
+JOIN chat_members cm ON c.id = cm.chat_id
+LEFT JOIN LatestMessages messages
+  ON c.id = messages.chat_id 
 WHERE
-    cm.user_id = $1
+  cm.user_id = $1
 ORDER BY
-    m.sent_at DESC NULLS LAST
+  messages.sent_at DESC NULLS LAST
 `
 
 type GetUserChatsRow struct {
-	ID                 uuid.UUID `json:"id"`
-	Name               string    `json:"name"`
-	InviteLink         *string   `json:"invite_link"`
-	Picture            *string   `json:"picture"`
-	LastMessageID      int64     `json:"last_message_id"`
-	LastMessageSender  uuid.UUID `json:"last_message_sender"`
-	LastMessageContent string    `json:"last_message_content"`
-	LastMessageSentAt  time.Time `json:"last_message_sent_at"`
+	ID         uuid.UUID `json:"id"`
+	Name       string    `json:"name"`
+	InviteLink *string   `json:"invite_link"`
+	Picture    *string   `json:"picture"`
+	Message    Message   `json:"message"`
 }
 
-// Get all chats for a user
+// Get all chats for a user with their latest message (if exists)
 func (q *Queries) GetUserChats(ctx context.Context, userID uuid.UUID) ([]GetUserChatsRow, error) {
 	rows, err := q.db.Query(ctx, getUserChats, userID)
 	if err != nil {
@@ -121,10 +118,11 @@ func (q *Queries) GetUserChats(ctx context.Context, userID uuid.UUID) ([]GetUser
 			&i.Name,
 			&i.InviteLink,
 			&i.Picture,
-			&i.LastMessageID,
-			&i.LastMessageSender,
-			&i.LastMessageContent,
-			&i.LastMessageSentAt,
+			&i.Message.ID,
+			&i.Message.ChatID,
+			&i.Message.SenderID,
+			&i.Message.Content,
+			&i.Message.SentAt,
 		); err != nil {
 			return nil, err
 		}

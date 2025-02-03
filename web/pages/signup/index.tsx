@@ -66,6 +66,9 @@ export function SignupPage({
     if (formData["username"].length < 3)
       return toast.error(genericErrorsMap["shortUsername"]);
 
+    if (formData["username"].length > 27)
+      return toast.error(genericErrorsMap["shortUsername"]);
+
     if (formData["password"].length < 8)
       return toast.error(genericErrorsMap["shortPassword"]);
 
@@ -106,7 +109,7 @@ export function SignupPage({
           <form onSubmit={handleSubmit}>
             <div className="flex flex-col gap-6">
               <div className="grid gap-2">
-                <Label htmlFor="username">Username</Label>
+                <Label htmlFor="username">Username*</Label>
                 <Input
                   id="username"
                   name="username"
@@ -116,7 +119,7 @@ export function SignupPage({
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">Email*</Label>
                 <Input
                   id="email"
                   name="email"
@@ -126,7 +129,7 @@ export function SignupPage({
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">Password*</Label>
                 <Input
                   id="password"
                   name="password"

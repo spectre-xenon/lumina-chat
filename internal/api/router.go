@@ -57,6 +57,9 @@ func (a *App) LoadRoutes() {
 	a.handleFuncWithAuth(apiRouter, "PATCH /user", a.patchUserHandler)
 
 	// Chat
+	//  Create a chat
+	a.handleFuncWithAuth(apiRouter, "POST /chat", a.createChatHandler)
+	//  Get all chats for a user
 	a.handleFuncWithAuth(apiRouter, "GET /chats", a.getUserChatsHandler)
 
 	// Enable logging on dev enviroments

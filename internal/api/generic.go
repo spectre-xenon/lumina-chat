@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/spectre-xenon/lumina-chat/internal/db"
+	"github.com/spectre-xenon/lumina-chat/internal/util"
 )
 
 type HanlderWithSession func(w http.ResponseWriter, r *http.Request, session db.Session)
@@ -29,6 +30,6 @@ func JSON(w http.ResponseWriter, response any) {
 }
 
 func internalServerError(w http.ResponseWriter) {
-	response := ApiResponse[db.User]{ErrCode: nil}
+	response := ApiResponse[db.User]{ErrCode: util.Of(InternalServerError)}
 	JSONError(w, response, http.StatusInternalServerError)
 }

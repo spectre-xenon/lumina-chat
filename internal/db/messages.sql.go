@@ -13,9 +13,9 @@ import (
 )
 
 const createMessage = `-- name: CreateMessage :one
-INSERT INTO messages (id, chat_id, sender_id, content, sent_at)
-VALUES (gen_random_uuid(), $1, $2, $3, NOW())
-RETURNING id, content, sender_id, sent_at
+INSERT INTO messages (chat_id, sender_id, content, sent_at)
+VALUES ($1, $2, $3, NOW())
+RETURNING id, chat_id, sender_id, content, sent_at
 `
 
 type CreateMessageParams struct {
@@ -24,21 +24,15 @@ type CreateMessageParams struct {
 	Content  string    `json:"content"`
 }
 
-type CreateMessageRow struct {
-	ID       int64     `json:"id"`
-	Content  string    `json:"content"`
-	SenderID uuid.UUID `json:"sender_id"`
-	SentAt   time.Time `json:"sent_at"`
-}
-
 // Create a new message
-func (q *Queries) CreateMessage(ctx context.Context, arg CreateMessageParams) (CreateMessageRow, error) {
+func (q *Queries) CreateMessage(ctx context.Context, arg CreateMessageParams) (Message, error) {
 	row := q.db.QueryRow(ctx, createMessage, arg.ChatID, arg.SenderID, arg.Content)
-	var i CreateMessageRow
+	var i Message
 	err := row.Scan(
 		&i.ID,
-		&i.Content,
+		&i.ChatID,
 		&i.SenderID,
+		&i.Content,
 		&i.SentAt,
 	)
 	return i, err

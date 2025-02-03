@@ -24,7 +24,11 @@ export function useFetch<T>(url: string, opts?: RequestInit) {
     fetchData();
   }, [url, opts, navigate]);
 
-  return [data, loading] as [T, boolean];
+  return [data, loading, setData] as [
+    T,
+    boolean,
+    React.Dispatch<React.SetStateAction<T>>,
+  ];
 }
 
 export async function simpleFetch<T>(
