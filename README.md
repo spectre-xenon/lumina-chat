@@ -10,11 +10,15 @@ Lumina Chat provides a real-time group chat experience. Key features include ses
 
 ## Features
 
-*   **Real-time Chat:** Websocket-based communication with a pub/sub pattern for instant messaging.
+*   **Real-time Chat(WIP):** Websocket-based communication with a pub/sub pattern for instant messaging.
 *   **Secure Authentication:** Session-based authentication and Argon2id hashing protect user data.
-*   **Chat Management:** Create and manage chat groups with role-based permissions.
+*   **Chat Management:**
+      - Create and manage chat groups.
+      - role-based permissions(WIP)
 *   **Appealing Interface:** Modern design for a user-friendly experience.
-*   **Pagination:** Infinite scroll for browsing chat messages.
+*   **Pagination(Almost done):** Infinite scroll for browsing chat messages.
+*   **Resource Management:** Worker pool implementation to prevent resource exhaustion during Argon2id hashing.
+*   **Enhanced Security:** Implemented good security practices, like including a limit body middleware to restrict request body size.
 
 ## Technologies Used
 
